@@ -1,0 +1,308 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+}
+
+:root {
+  color-scheme: light;
+  font-family: Palatino, "Iowan Old Style", Georgia, serif;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+}
+
+header,
+.shell {
+  width: min(960px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 1.5rem 0 0.5rem;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  flex: 1 0 auto;
+  min-width: max-content;
+  font-size: 1.75rem;
+}
+
+.account {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.account form {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 24rem;
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+.account label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.account input,
+.create-album input {
+  font: inherit;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+button,
+[id="sign-out"],
+[data-cancel-delete],
+[data-select-photo],
+[data-place-photo],
+[data-publish-photo],
+[data-publish-album],
+[data-private-album],
+a {
+  font: inherit;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+}
+
+[id="add-photos"],
+.account button,
+.create-album button {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.confirm-delete {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+}
+
+button:focus-visible,
+.account input:focus-visible,
+.create-album input:focus-visible {
+  outline: 2px solid var(--ring);
+}
+
+.month {
+  margin-top: 1.5rem;
+}
+
+h2 {
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.75rem;
+}
+
+.grid,
+.album-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.tile-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.tile-wrap > button {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.tile,
+.album-photos figure {
+  min-width: 0;
+  padding: 0;
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.tile {
+  display: block;
+}
+
+.album-photos figure {
+  display: flex;
+  flex-direction: column;
+}
+
+.photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.5rem;
+}
+
+.tile img,
+.album-photos img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: var(--muted);
+}
+
+.date,
+.count,
+.assigned,
+.album-photos figcaption {
+  padding: 0 0.75rem;
+}
+
+.date,
+.count,
+.assigned {
+  padding-bottom: 0.35rem;
+}
+
+.empty,
+.count {
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.assigned,
+.skip,
+.error {
+  font-size: 0.95rem;
+}
+
+.empty,
+.skip,
+.error {
+  margin-top: 1.5rem;
+  padding: 0.75rem;
+}
+
+.skip {
+  background: var(--info);
+  color: var(--info-foreground);
+}
+
+.error {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+}
+
+.album-photos {
+  margin-top: 1rem;
+}
+
+main > p {
+  margin-top: 1rem;
+}
+
+.create-album,
+.named-albums {
+  margin-top: 1.5rem;
+}
+
+.create-album {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 24rem;
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+.create-album label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.name {
+  padding: 0.75rem 0.75rem 0;
+}
+
+.preview {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  background: var(--popover);
+  color: var(--popover-foreground);
+}
+
+.preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.preview button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}

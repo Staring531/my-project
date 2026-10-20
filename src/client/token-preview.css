@@ -1,0 +1,122 @@
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font:
+    16px / 1.45 system-ui,
+    sans-serif;
+}
+
+.token-page {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+
+.roles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.role {
+  display: grid;
+  gap: 8px;
+}
+
+.surface {
+  min-height: 72px;
+  padding: 12px;
+  border-radius: var(--radius);
+}
+
+[data-role="background"] .surface {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+[data-role="card"] .surface {
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+[data-role="popover"] .surface {
+  background: var(--popover);
+  color: var(--popover-foreground);
+}
+
+[data-role="primary"] .surface {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+[data-role="secondary"] .surface {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+[data-role="muted"] .surface {
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+
+[data-role="accent"] .surface {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+[data-role="destructive"] .surface {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+}
+
+[data-role="success"] .surface {
+  background: var(--success);
+  color: var(--success-foreground);
+}
+
+[data-role="warning"] .surface {
+  background: var(--warning);
+  color: var(--warning-foreground);
+}
+
+[data-role="info"] .surface {
+  background: var(--info);
+  color: var(--info-foreground);
+}
+
+.supports {
+  display: grid;
+  gap: 12px;
+}
+
+[data-support="border"] {
+  border: 1px solid var(--border);
+  padding: 12px;
+}
+
+[data-support="input"] {
+  outline: 2px solid var(--input);
+  padding: 12px;
+}
+
+[data-support="ring"] {
+  box-shadow: 0 0 0 3px var(--ring);
+  padding: 12px;
+}
+
+[data-support="radius"] {
+  border-radius: var(--radius);
+  padding: 12px;
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+button {
+  width: fit-content;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
