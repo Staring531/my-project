@@ -90,7 +90,11 @@ describe("token contrast", () => {
     }
 
     const light = appearances.light;
-    assert.equal(light.get("radius"), "0.5rem");
+    assert.equal(light.get("radius"), "5px");
+    assert.ok(supportingAppearance.some((item) => item.name === "shadow"));
+    assert.ok(
+      supportingAppearance.some((item) => item.name === "primary-hover"),
+    );
     assert.equal(appearances.dark.has("radius"), false);
     for (const name of ["border", "input", "ring"]) {
       assert.match(light.get(name), /^oklch\(/);

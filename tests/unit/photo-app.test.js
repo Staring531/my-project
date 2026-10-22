@@ -1,38 +1,20 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { renderAlbum } from "../../src/client/album-view.js";
 import {
   failedDeletion,
   renderDeletionAlert,
 } from "../../src/client/photo-app.js";
 
 describe("confirm delete failure", () => {
-  it("keeps the picture and shows the server error when delete is rejected", () => {
-    const photos = [
-      {
-        id: "mine",
-        imageUrl: "/images/mine.jpg",
-        ownerId: "owner-1",
-        public: true,
-      },
-    ];
+  it("keeps the picture id and shows the server error when delete is rejected", () => {
     const failure = failedDeletion(
       "mine",
       new Error("No route exists for that request."),
     );
-    const markup =
-      renderDeletionAlert(failure.deleteError) +
-      renderAlbum(photos, {
-        person: { id: "owner-1" },
-        confirmingId: failure.confirmingId,
-      });
-
+    const markup = renderDeletionAlert(failure.deleteError);
     assert.equal(failure.confirmingId, "mine");
-    assert.match(markup, /data-photo-id="mine"/);
-    assert.match(markup, /data-confirm-delete="mine"/);
     assert.match(markup, /<p class="error" role="alert">/);
     assert.match(markup, /No route exists for that request\./);
-    assert.equal(markup.includes("data-delete-photo"), false);
   });
 
   it("uses a fallback message when the rejection has none", () => {

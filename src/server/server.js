@@ -197,7 +197,7 @@ export function createHandler({ db, dataDir }) {
 
     if (req.method === "GET" && pathname === "/api/albums") {
       sendJson(res, 200, {
-        albums: listAlbums(db, viewerId),
+        albums: listAlbums(db, viewerId, dataDir),
         namedAlbums: listNamedAlbums(db, viewerId),
       });
       return;

@@ -2,12 +2,8 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { addPhotoBatch, summarizeBatch } from "../../src/client/api.js";
 import {
-  renderLibrary,
-  renderSkipMessage,
-} from "../../src/client/library-view.js";
-import {
-  consumePendingNotice,
   handoffBatchNotice,
+  noticeFromBatch,
 } from "../../src/client/notice.js";
 
 describe("photo batch summary", () => {
@@ -58,16 +54,13 @@ describe("photo batch summary", () => {
     assert.deepEqual(summary.errors, []);
   });
 
-  it("keeps a batch skip notice for the next library render", () => {
-    const handed = handoffBatchNotice(renderSkipMessage(1), {
+  it("keeps a batch skip notice for the library and returns home from an album", () => {
+    const handed = handoffBatchNotice("1 item was skipped.", {
       fromAlbum: true,
     });
     assert.equal(handed.nextHash, "#/");
-    const first = consumePendingNotice(handed.pendingNotice);
-    const library = first.notice + renderLibrary([]);
-    assert.match(library, /1 item was skipped/);
-    const again = consumePendingNotice(first.pendingNotice);
-    assert.equal(again.notice, "");
-    assert.equal(again.notice + renderLibrary([]), renderLibrary([]));
+    assert.match(handed.pendingNotice, /1 item was skipped/);
+    const notice = noticeFromBatch({ skipped: 1, duplicates: 0, errors: [] });
+    assert.equal(notice.skipped, 1);
   });
 });

@@ -44,10 +44,15 @@ describe("screen color check", () => {
     const files = [
       "../../src/client/index.html",
       "../../src/client/main.js",
-      "../../src/client/library-view.js",
-      "../../src/client/album-view.js",
-      "../../src/client/preview-view.js",
-      "../../src/client/session-view.js",
+      "../../src/client/components/ui/dialog.jsx",
+      "../../src/client/components/ui/dropdown-menu.jsx",
+      "../../src/client/components/ui/popover.jsx",
+      "../../src/client/screens/notice-strip.jsx",
+      "../../src/client/screens/library.jsx",
+      "../../src/client/screens/album.jsx",
+      "../../src/client/screens/preview.jsx",
+      "../../src/client/screens/account-dialog.jsx",
+      "../../src/client/screens/header.jsx",
     ];
     for (const path of files) {
       assert.deepEqual(findScreenColors(read(path)), [], path);

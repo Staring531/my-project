@@ -23,8 +23,10 @@ import {
 } from "../../src/server/library.js";
 import {
   exifJpeg,
+  gifBytes,
   jpegBytes,
   openLibrary,
+  pngBytes,
   openSession,
   postPhoto,
   removeDir,
@@ -32,6 +34,7 @@ import {
   signIn,
   tempDataDir,
   textBytes,
+  webpBytes,
   withServer,
 } from "../helpers.js";
 
@@ -585,10 +588,9 @@ describe("library storage", () => {
       timeZone: "UTC",
       ownerId: ada,
     });
-    const secondBytes = Buffer.from([0xff, 0xd8, 0xff, 0x00, 0xd9]);
     const second = await addPhoto(db, {
       dataDir,
-      bytes: secondBytes,
+      bytes: jpegBytes(1),
       originalName: "second.jpg",
       addedAt: "2026-10-15T03:30:00.000Z",
       timeZone: "UTC",
@@ -846,7 +848,7 @@ describe("library storage", () => {
       assert.equal(holiday.album.photoCount, 0);
       const different = await addPhoto(db, {
         dataDir,
-        bytes: Buffer.from([0xff, 0xd8, 0xff, 0x11, 0xd9]),
+        bytes: jpegBytes(1),
         originalName: "a.png",
         addedAt: "2026-10-16T12:00:00.000Z",
         timeZone: "UTC",
@@ -865,6 +867,114 @@ describe("library storage", () => {
       );
     } finally {
       db.close();
+      await removeDir(dataDir);
+    }
+  });
+
+  it("skips an empty jpeg and lists pictures that can be shown", async () => {
+    const dataDir = await tempDataDir();
+    try {
+      await withServer(dataDir, async ({ base }) => {
+        const ada = await openSession(base, "Ada", "ada-secret");
+        const empty = await postPhoto(
+          base,
+          Buffer.from([0xff, 0xd8, 0xff, 0xd9]),
+          "empty.jpg",
+          ada.cookie,
+        );
+        assert.equal(empty.status, 422);
+        assert.equal(empty.body.status, "skipped");
+        assert.equal(empty.body.reason, "unreadable");
+        const before = openLibrary(dataDir);
+        assert.equal(
+          before.prepare("SELECT COUNT(*) AS count FROM photos").get().count,
+          0,
+        );
+        before.close();
+        assert.deepEqual(readdirSync(path.join(dataDir, "images")), []);
+
+        for (const [bytes, name] of [
+          [jpegBytes(), "plain.jpg"],
+          [pngBytes(), "plain.png"],
+          [gifBytes(), "anim.gif"],
+          [webpBytes(), "still.webp"],
+        ]) {
+          const added = await postPhoto(base, bytes, name, ada.cookie);
+          assert.equal(added.status, 201);
+          assert.equal(added.body.status, "added");
+        }
+
+        const albums = await (
+          await fetch(`${base}/api/albums`, {
+            headers: { cookie: ada.cookie },
+          })
+        ).json();
+        const mine = albums.albums.find(
+          (album) => album.ownerId === ada.person.id,
+        );
+        const listed = await (
+          await fetch(
+            `${base}/api/albums/${encodeURIComponent(mine.id)}/photos`,
+            { headers: { cookie: ada.cookie } },
+          )
+        ).json();
+        assert.equal(listed.photos.length, 4);
+        for (const photo of listed.photos) {
+          const image = await fetch(`${base}${photo.imageUrl}`, {
+            headers: { cookie: ada.cookie },
+          });
+          assert.equal(image.status, 200);
+          assert.match(image.headers.get("content-type") ?? "", /^image\//);
+        }
+      });
+    } finally {
+      await removeDir(dataDir);
+    }
+  });
+
+  it("uses a readable picture as the public album cover", async () => {
+    const dataDir = await tempDataDir();
+    const db = openLibrary(dataDir);
+    const marker = seedPhoto(db, {
+      albumDate: "2026-10-15",
+      dateAssigned: 1,
+      addedSeq: 1,
+      originalName: "day.jpg",
+    });
+    const readable = seedPhoto(db, {
+      albumDate: "2026-10-15",
+      dateAssigned: 1,
+      addedSeq: 2,
+      originalName: "plain.jpg",
+    });
+    writeFileSync(
+      path.join(dataDir, "images", marker.storedName),
+      Buffer.from([0xff, 0xd8, 0xff, 0xd9]),
+    );
+    writeFileSync(
+      path.join(dataDir, "images", readable.storedName),
+      jpegBytes(),
+    );
+    db.close();
+    try {
+      await withServer(dataDir, async ({ base }) => {
+        const body = await (await fetch(`${base}/api/albums`)).json();
+        const album = body.albums.find(
+          (item) => item.id === "unowned:2026-10-15:1",
+        );
+        assert.equal(album.photoCount, 2);
+        assert.equal(album.coverImageUrl, `/images/${readable.storedName}`);
+        const listed = await (
+          await fetch(
+            `${base}/api/albums/${encodeURIComponent(album.id)}/photos`,
+          )
+        ).json();
+        assert.equal(listed.photos.length, 2);
+        const image = await fetch(`${base}${album.coverImageUrl}`);
+        assert.equal(image.status, 200);
+        assert.match(image.headers.get("content-type") ?? "", /^image\//);
+      });
+    } finally {
       await removeDir(dataDir);
     }
   });

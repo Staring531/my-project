@@ -6,6 +6,10 @@ const css = readFileSync(
   new URL("../../src/client/styles.css", import.meta.url),
   "utf8",
 );
+const button = readFileSync(
+  new URL("../../src/client/components/ui/button.jsx", import.meta.url),
+  "utf8",
+);
 
 function rules(source) {
   return [...source.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => ({
@@ -41,26 +45,21 @@ describe("organizer colors", () => {
     assert.match(css, /var\(--ring\)/);
 
     hasPair(/:root/, "background", "foreground");
-    hasPair(/\.tile/, "card", "card-foreground");
-    hasPair(/\.album-photos figure/, "card", "card-foreground");
-    hasPair(/\.account form/, "card", "card-foreground");
-    hasPair(/\.create-album/, "card", "card-foreground");
+    hasPair(/\.album-card/, "card", "card-foreground");
+    hasPair(/\.picture-card/, "card", "card-foreground");
     hasPair(/\.preview(?![^\n{]*img)/, "popover", "popover-foreground");
-    hasPair(/add-photos/, "primary", "primary-foreground");
-    hasPair(/\.account button/, "primary", "primary-foreground");
-    hasPair(/\.create-album button/, "primary", "primary-foreground");
-    hasPair(/sign-out/, "secondary", "secondary-foreground");
-    hasPair(/data-cancel-delete/, "secondary", "secondary-foreground");
-    hasPair(/data-select-photo/, "secondary", "secondary-foreground");
-    hasPair(/data-place-photo/, "secondary", "secondary-foreground");
-    hasPair(/data-publish-photo/, "secondary", "secondary-foreground");
+    assert.match(button, /default:\s*"bg-primary text-primary-foreground/);
+    assert.match(
+      button,
+      /secondary:\s*"bg-secondary text-secondary-foreground/,
+    );
     hasPair(/\.empty/, "muted", "muted-foreground");
     hasPair(/\.count/, "muted", "muted-foreground");
-    hasPair(/\.skip/, "info", "info-foreground");
+    hasPair(/\.notice-skip/, "muted", "muted-foreground");
     hasPair(/\.error/, "destructive", "destructive-foreground");
     hasPair(/\.confirm-delete/, "destructive", "destructive-foreground");
     const image = rules(css).find((rule) =>
-      /\.tile img|\.album-photos img/.test(rule.selector),
+      /\.album-card img|\.picture-card img/.test(rule.selector),
     );
     assert.match(image.body, /background:\s*var\(--muted\)/);
     assert.doesNotMatch(
@@ -69,21 +68,13 @@ describe("organizer colors", () => {
     );
   });
 
-  it("stacks album cards and keeps the tile out of the inline control padding", () => {
-    const tile = rules(css).find(
-      (rule) =>
-        /^\s*\.tile\s*$/.test(rule.selector) &&
-        /display:\s*block/.test(rule.body),
-    );
-    assert.ok(tile, ".tile should be a block");
-    const tileBox = rules(css).find(
-      (rule) => /\.tile/.test(rule.selector) && /padding:\s*0/.test(rule.body),
-    );
-    assert.ok(tileBox, ".tile should clear the shared link padding");
-    const wrap = rules(css).find((rule) => /\.tile-wrap/.test(rule.selector));
-    assert.match(wrap.body, /flex-direction:\s*column/);
+  it("stacks album cards and keeps the page width off the inner main", () => {
+    const card = rules(css).find((rule) => /\.album-card/.test(rule.selector));
+    assert.match(card.body, /flex-direction:\s*column/);
+    assert.doesNotMatch(css, /button\s*,\s*a\s*\{/);
     const width = rules(css).find((rule) => /min\(960px/.test(rule.body));
-    assert.match(width.selector, /\.shell/);
+    assert.match(width.selector, /header/);
+    assert.match(width.selector, /\.page/);
     assert.doesNotMatch(width.selector, /\bmain\b/);
   });
 });

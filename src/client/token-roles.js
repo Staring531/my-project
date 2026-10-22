@@ -17,4 +17,7 @@ export const supportingAppearance = [
   { name: "input", kind: "color" },
   { name: "ring", kind: "color" },
   { name: "radius", kind: "length" },
+  { name: "header", kind: "color" },
+  { name: "shadow", kind: "color" },
+  { name: "primary-hover", kind: "color" },
 ];

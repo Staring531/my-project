@@ -5,6 +5,8 @@ import {
   deleteImage,
   detectMediaType,
   extensionForMediaType,
+  imageIsShowable,
+  readStoredImage,
   removeImage,
   writeImage,
 } from "./files.js";
@@ -145,8 +147,22 @@ function toAlbum(db, group, coverName) {
     photoCount: group.photo_count,
     dateAssigned: group.date_assigned === 1,
     public: published,
-    coverImageUrl: `/images/${coverName}`,
+    coverImageUrl: coverName ? `/images/${coverName}` : null,
   };
+}
+
+function showableCoverName(dataDir, names) {
+  let missing = null;
+  for (const name of names) {
+    if (!dataDir) return name;
+    const bytes = readStoredImage(dataDir, name);
+    if (!bytes) {
+      if (!missing) missing = name;
+      continue;
+    }
+    if (imageIsShowable(bytes)) return name;
+  }
+  return missing;
 }
 
 function ownerClause(ownerId) {
@@ -154,7 +170,7 @@ function ownerClause(ownerId) {
   return { sql: "photos.owner_id IS NULL", params: [] };
 }
 
-export function listAlbums(db, viewerId = null) {
+export function listAlbums(db, viewerId = null, dataDir = null) {
   const groups = db
     .prepare(
       `SELECT photos.owner_id AS owner_id, photos.album_date AS album_date,
@@ -168,23 +184,23 @@ export function listAlbums(db, viewerId = null) {
     .all(viewerId, viewerId);
   return groups.map((group) => {
     const owner = ownerClause(group.owner_id);
-    const cover = db
+    const names = db
       .prepare(
         `SELECT stored_name FROM photos
          WHERE photos.album_date = ? AND photos.date_assigned = ?
            AND ${owner.sql}
            AND ${VISIBLE}
-         ORDER BY ${PHOTO_ORDER}
-         LIMIT 1`,
+         ORDER BY ${PHOTO_ORDER}`,
       )
-      .get(
+      .all(
         group.album_date,
         group.date_assigned,
         ...owner.params,
         viewerId,
         viewerId,
-      );
-    return toAlbum(db, group, cover.stored_name);
+      )
+      .map((row) => row.stored_name);
+    return toAlbum(db, group, showableCoverName(dataDir, names));
   });
 }
 
@@ -362,6 +378,9 @@ export async function addPhoto(
   const mediaType = detectMediaType(bytes);
   if (!mediaType) {
     return { status: "skipped", reason: "unsupported-type" };
+  }
+  if (!imageIsShowable(bytes)) {
+    return { status: "skipped", reason: "unreadable" };
   }
 
   const contentHash = createHash("sha256").update(bytes).digest("hex");
